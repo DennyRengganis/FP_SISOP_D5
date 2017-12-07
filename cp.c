@@ -66,6 +66,10 @@ rekursif(char *asal,char* tujuan)
         continue;
       memmove(p, de.name, DIRSIZ);
       p[DIRSIZ] = 0;
+      if(stat(buf,&st)<0){
+	printf(1,"cp -R: file cannot be stats\n");
+	continue;	
+	}
       if(st.type==1){
         if(fmtname(buf)[0]=='.')continue;
 	printf(1,"dir terjadi\n");
@@ -73,26 +77,34 @@ rekursif(char *asal,char* tujuan)
 	char res[512];
 	strcpy(baru,asal);
 	strcat(baru,"/");
-	strcat(baru,fmtname(buf));
+	strcat(baru,p);
 	strcpy(res,tujuan);
 	strcat(res,"/");
-	strcat(res,fmtname(buf));
+	strcat(res,p);
 	mkdir(res);
 	rekursif(baru,res);	
 	}
        else{
-        char res[512]; char baru[512];
-        strcpy(res,tujuan);
+	int a;        
+	char res[512]; char baru[512];
+        //strcpy(res,"/");
+	strcpy(res,tujuan);
         strcat(res,"/");
-        strcat(res,fmtname(buf));
-	strcpy(baru,"/");
-        strcat(baru,tujuan);
+        strcat(res,p);
+	//strcpy(baru,"/");
+        strcpy(baru,asal);
         strcat(baru,"/");
+	strcat(baru,p);
         int ex,as;
 	printf(1,"file terjadi\n");
+	//printf(1,"%s %s\n",baru,res);
         ex=open(res,O_CREATE | O_RDWR);
 	as=open(baru,O_RDONLY);
-        while(read(as,go,sizeof(go))>0) write(ex,go,sizeof(go));
+        while((a=read(as,go,sizeof(go)))>0) 
+	{
+		//printf(1,"%s\n",go);		
+		write(ex,go,sizeof(go));
+	}
 	close(as);
 	close(ex);
 	}
@@ -146,6 +158,7 @@ int main(int argc, char *argv[]){
 		printf(1,"File %s tercopy ke %s\n",argv[1],sec);
 		fd1=open(sec,O_CREATE | O_RDWR);
 	}
+	printf(1,"%s %s\n",argv[1],sec);
 	while((n=read(fd0,go,sizeof(go)))>0) write(fd1,go,sizeof(go));
 	printf(1,"CP SUCCESS\n");
 	close(fd0);
